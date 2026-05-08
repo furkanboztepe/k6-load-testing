@@ -1,0 +1,27 @@
+apiVersion: 1
+
+datasources:
+  - name: InfluxDB-k6
+    type: influxdb
+    uid: influxdb
+    access: proxy
+    url: http://influxdb:8086
+    # InfluxDB 2.x Flux query dili
+    jsonData:
+      version: Flux
+      organization: infina
+      defaultBucket: k6
+      tlsSkipVerify: true
+    secureJsonData:
+      token: admin123token
+    isDefault: true
+    editable: true
+
+  - name: Loki-k6-logs
+    type: loki
+    uid: loki
+    access: proxy
+    url: http://loki:3100
+    editable: true
+    jsonData:
+      maxLines: 1000

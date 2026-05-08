@@ -1,0 +1,51 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: k6-errors
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: k6
+          __path__: /var/log/k6/*.log
+
+    pipeline_stages:
+      # JSON log satırlarını parse et
+      - json:
+          expressions:
+            level: level
+            msg: msg
+            # k6 console.log içindeki JSON payload'ı parse et
+            raw_msg: msg
+
+      # Sadece "level=error" veya console.log'ları al (k6 log formatı)
+      - json:
+          source: raw_msg
+          expressions:
+            vu: vu
+            iteration: iteration
+            status: status
+            duration: duration
+            customerTitle: customerTitle
+            refCode: refCode
+            turkishIdNo: TurkishIdNo
+            timestamp: timestamp
+
+      # Label olarak ekle - Loki'de filtreleyebileceğiz
+      - labels:
+          level:
+          vu:
+          status:
+
+      # Boş vu'ları filtrele (sadece hata loglarını al)
+      - drop:
+          expression: '.*"vu":null.*'
+          drop_counter_reason: no_vu_label

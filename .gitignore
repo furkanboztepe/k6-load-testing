@@ -1,0 +1,4 @@
+.DS_Store
+.env
+k6/k6-logs/
+*.log

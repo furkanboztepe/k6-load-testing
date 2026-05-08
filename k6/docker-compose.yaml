@@ -1,0 +1,123 @@
+services:
+  influxdb:
+    image: influxdb:2.7
+    container_name: influxdb
+    ports:
+      - "8086:8086"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=admin123
+      - DOCKER_INFLUXDB_INIT_ORG=infina
+      - DOCKER_INFLUXDB_INIT_BUCKET=k6
+      # InfluxDB 1.x compat için - k6 native output bunu kullanır
+      - DOCKER_INFLUXDB_INIT_RETENTION=30d
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=admin123token  # EKLENMESİ GEREKEN SATIR
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+      - ./influxdb-config:/etc/influxdb2
+    healthcheck:
+      test: ["CMD", "influx", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # InfluxDB 1.x compat DBRP mapping için init container
+  influxdb-init:
+    image: influxdb:2.7
+    container_name: influxdb-init
+    depends_on:
+      influxdb:
+        condition: service_healthy
+    restart: "no"
+    entrypoint: >
+      sh -c "
+        influx config create --config-name default
+          --host-url http://influxdb:8086
+          --org infina
+          --token admin123token
+          --active &&
+        influx v1 dbrp create
+          --bucket-name k6
+          --db k6
+          --rp autogen
+          --default
+          --org infina || true
+      "
+    environment:
+      - INFLUX_TOKEN=admin123token
+
+  grafana:
+    image: grafana/grafana:10.4.0
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+    depends_on:
+      influxdb:
+        condition: service_healthy
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/etc/grafana/dashboards  # Değiştirilen satır
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Loki - VU hata logları için merkezi log sistemi
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - loki-data:/loki
+      - ./loki-config:/etc/loki
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:3100/ready || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Promtail - k6 log dosyasını Loki'ye gönderir
+  promtail:
+    image: grafana/promtail:2.9.0
+    container_name: promtail
+    volumes:
+      - ./promtail-config:/etc/promtail
+      - ./k6-logs:/var/log/k6           # k6 logları buraya yazılır
+    command: -config.file=/etc/promtail/config.yaml
+    depends_on:
+      - loki
+
+  k6:
+    image: grafana/k6:latest
+    container_name: k6
+    depends_on:
+      influxdb:
+        condition: service_healthy
+    environment:
+      - K6_INFLUXDB_INSECURE=false
+      - K6_INFLUXDB_PUSH_INTERVAL=5s
+      - K6_INFLUXDB_CONCURRENT_WRITES=4
+      - K6_INFLUXDB_TAGS_AS_FIELDS=vu,iteration
+      - K6_LOG_OUTPUT=file=./k6-logs/k6-run.log
+      - K6_LOG_FORMAT=json
+      - K6_OUT=influxdb=http://infina:admin123token@influxdb:8086/k6
+    volumes:
+      - ./:/scripts
+      - ./k6-logs:/scripts/k6-logs
+    env_file:
+      - .env
+    working_dir: /scripts
+
+volumes:
+  influxdb-data:
+  grafana-data:
+  loki-data:
