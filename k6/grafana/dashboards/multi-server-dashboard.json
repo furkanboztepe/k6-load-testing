@@ -1,0 +1,504 @@
+{
+  "__inputs": [],
+  "__requires": [],
+  "annotations": { "list": [] },
+  "description": "İki sunucu ortamını (bs-testha-1 vs bs-testha-2) yan yana karşılaştırma dashboard'u",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "title": "📊 Server Karşılaştırma — Genel Metrikler (Senaryo: $Senaryo)",
+      "type": "row"
+    },
+
+    {
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [
+            { "color": "green", "value": null },
+            { "color": "yellow", "value": 2000 },
+            { "color": "red", "value": 4000 }
+          ]},
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "id": 1,
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "area" },
+      "title": "Aktif VU — bs-testha-1",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+        "query": "from(bucket: \"k6\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"vus\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"server\"] == \"bs-testha-1\")\n  |> filter(fn: (r) => r[\"testName\"] =~ /^${Senaryo:regex}$/)\n  |> group()\n  |> last()\n  |> yield(name: \"last\")",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [
+            { "color": "green", "value": null },
+            { "color": "yellow", "value": 2000 },
+            { "color": "red", "value": 4000 }
+          ]},
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+      "id": 2,
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "area" },
+      "title": "Aktif VU — bs-testha-2",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+        "query": "from(bucket: \"k6\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"vus\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"server\"] == \"bs-testha-2\")\n  |> filter(fn: (r) => r[\"testName\"] =~ /^${Senaryo:regex}$/)\n  |> group()\n  |> last()\n  |> yield(name: \"last\")",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [
+            { "color": "green", "value": null },
+            { "color": "yellow", "value": 1500 },
+            { "color": "red", "value": 5000 }
+          ]},
+          "unit": "ms"
+        }
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "id": 3,
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" },
+      "title": "P95 — bs-testha-1",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+        "query": "from(bucket: \"k6\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"http_req_duration\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"server\"] == \"bs-testha-1\")\n  |> filter(fn: (r) => r[\"testName\"] =~ /^${Senaryo:regex}$/)\n  |> group()\n  |> quantile(q: 0.95)\n  |> yield(name: \"p95\")",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [
+            { "color": "green", "value": null },
+            { "color": "yellow", "value": 1500 },
+            { "color": "red", "value": 5000 }
+          ]},
+          "unit": "ms"
+        }
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "id": 4,
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" },
+      "title": "P95 — bs-testha-2",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+        "query": "from(bucket: \"k6\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"http_req_duration\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"server\"] == \"bs-testha-2\")\n  |> filter(fn: (r) => r[\"testName\"] =~ /^${Senaryo:regex}$/)\n  |> group()\n  |> quantile(q: 0.95)\n  |> yield(name: \"p95\")",
+        "refId": "A"
+      }]
+    },
+
+    {
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [
+            { "color": "green", "value": null },
+            { "color": "yellow", "value": 0.02 },
+            { "color": "red", "value": 0.05 }
+          ]},
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 5 },
+      "id": 5,
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "title": "Hata Oranı — bs-testha-1",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+        "query": "from(bucket: \"k6\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"vu_errors\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"server\"] == \"bs-testha-1\")\n  |> filter(fn: (r) => r[\"testName\"] =~ /^${Senaryo:regex}$/)\n  |> group()\n  |> mean()\n  |> yield(name: \"mean\")",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [
+            { "color": "green", "value": null },
+            { "color": "yellow", "value": 0.02 },
+            { "color": "red", "value": 0.05 }
+          ]},
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 5 },
+      "id": 6,
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "title": "Hata Oranı — bs-testha-2",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+        "query": "from(bucket: \"k6\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"vu_errors\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"server\"] == \"bs-testha-2\")\n  |> filter(fn: (r) => r[\"testName\"] =~ /^${Senaryo:regex}$/)\n  |> group()\n  |> mean()\n  |> yield(name: \"mean\")",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [
+            { "color": "blue", "value": null }
+          ]},
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 5 },
+      "id": 7,
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "title": "Toplam İstek — bs-testha-1",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+        "query": "from(bucket: \"k6\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"http_reqs\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"server\"] == \"bs-testha-1\")\n  |> filter(fn: (r) => r[\"testName\"] =~ /^${Senaryo:regex}$/)\n  |> group()\n  |> sum()\n  |> yield(name: \"sum\")",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [
+            { "color": "purple", "value": null }
+          ]},
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 5 },
+      "id": 8,
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "title": "Toplam İstek — bs-testha-2",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+        "query": "from(bucket: \"k6\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"http_reqs\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"server\"] == \"bs-testha-2\")\n  |> filter(fn: (r) => r[\"testName\"] =~ /^${Senaryo:regex}$/)\n  |> group()\n  |> sum()\n  |> yield(name: \"sum\")",
+        "refId": "A"
+      }]
+    },
+
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 9 },
+      "id": 101,
+      "title": "📈 Yan Yana Zaman Serisi Karşılaştırması",
+      "type": "row"
+    },
+
+    {
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 2, "fillOpacity": 10 }
+        },
+        "overrides": [
+          { "matcher": { "id": "byFrameRefID", "options": "A" }, "properties": [{ "id": "displayName", "value": "bs-testha-1" }, { "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }] },
+          { "matcher": { "id": "byFrameRefID", "options": "B" }, "properties": [{ "id": "displayName", "value": "bs-testha-2" }, { "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }] }
+        ]
+      },
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 10 },
+      "id": 10,
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "min"] }
+      },
+      "title": "⏱️  Response Time (Ortalama) — Side by Side",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+          "query": "from(bucket: \"k6\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"http_req_duration\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"server\"] == \"bs-testha-1\")\n  |> filter(fn: (r) => r[\"testName\"] =~ /^${Senaryo:regex}$/)\n  |> group()\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"server1\")",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+          "query": "from(bucket: \"k6\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"http_req_duration\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"server\"] == \"bs-testha-2\")\n  |> filter(fn: (r) => r[\"testName\"] =~ /^${Senaryo:regex}$/)\n  |> group()\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"server2\")",
+          "refId": "B"
+        }
+      ]
+    },
+
+    {
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 2, "fillOpacity": 10 }
+        },
+        "overrides": [
+          { "matcher": { "id": "byFrameRefID", "options": "A" }, "properties": [{ "id": "displayName", "value": "bs-testha-1 RPS" }, { "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }] },
+          { "matcher": { "id": "byFrameRefID", "options": "B" }, "properties": [{ "id": "displayName", "value": "bs-testha-2 RPS" }, { "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }] }
+        ]
+      },
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 10 },
+      "id": 11,
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }
+      },
+      "title": "🚀 Throughput (RPS) — Side by Side",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+          "query": "from(bucket: \"k6\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"http_reqs\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"server\"] == \"bs-testha-1\")\n  |> filter(fn: (r) => r[\"testName\"] =~ /^${Senaryo:regex}$/)\n  |> group()\n  |> aggregateWindow(every: v.windowPeriod, fn: sum, createEmpty: false)\n  |> yield(name: \"rps1\")",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+          "query": "from(bucket: \"k6\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"http_reqs\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"server\"] == \"bs-testha-2\")\n  |> filter(fn: (r) => r[\"testName\"] =~ /^${Senaryo:regex}$/)\n  |> group()\n  |> aggregateWindow(every: v.windowPeriod, fn: sum, createEmpty: false)\n  |> yield(name: \"rps2\")",
+          "refId": "B"
+        }
+      ]
+    },
+
+    {
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 2, "fillOpacity": 5 }
+        },
+        "overrides": [
+          { "matcher": { "id": "byFrameRefID", "options": "A" }, "properties": [{ "id": "displayName", "value": "bs-testha-1 P95" }, { "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }] },
+          { "matcher": { "id": "byFrameRefID", "options": "B" }, "properties": [{ "id": "displayName", "value": "bs-testha-2 P95" }, { "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }] },
+          { "matcher": { "id": "byFrameRefID", "options": "C" }, "properties": [{ "id": "displayName", "value": "bs-testha-1 P99" }, { "id": "color", "value": { "mode": "fixed", "fixedColor": "dark-blue" } }] },
+          { "matcher": { "id": "byFrameRefID", "options": "D" }, "properties": [{ "id": "displayName", "value": "bs-testha-2 P99" }, { "id": "color", "value": { "mode": "fixed", "fixedColor": "dark-orange" } }] }
+        ]
+      },
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 19 },
+      "id": 20,
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "min"] }
+      },
+      "title": "📊 P95 / P99 Response Time — Karşılaştırma",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+          "query": "from(bucket: \"k6\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"http_req_duration\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"server\"] == \"bs-testha-1\")\n  |> filter(fn: (r) => r[\"testName\"] =~ /^${Senaryo:regex}$/)\n  |> group()\n  |> aggregateWindow(every: v.windowPeriod, fn: (tables=<-, column) => tables |> quantile(q: 0.95, column: column), createEmpty: false)\n  |> yield(name: \"p95_s1\")",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+          "query": "from(bucket: \"k6\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"http_req_duration\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"server\"] == \"bs-testha-2\")\n  |> filter(fn: (r) => r[\"testName\"] =~ /^${Senaryo:regex}$/)\n  |> group()\n  |> aggregateWindow(every: v.windowPeriod, fn: (tables=<-, column) => tables |> quantile(q: 0.95, column: column), createEmpty: false)\n  |> yield(name: \"p95_s2\")",
+          "refId": "B"
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+          "query": "from(bucket: \"k6\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"http_req_duration\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"server\"] == \"bs-testha-1\")\n  |> filter(fn: (r) => r[\"testName\"] =~ /^${Senaryo:regex}$/)\n  |> group()\n  |> aggregateWindow(every: v.windowPeriod, fn: (tables=<-, column) => tables |> quantile(q: 0.99, column: column), createEmpty: false)\n  |> yield(name: \"p99_s1\")",
+          "refId": "C"
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+          "query": "from(bucket: \"k6\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"http_req_duration\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"server\"] == \"bs-testha-2\")\n  |> filter(fn: (r) => r[\"testName\"] =~ /^${Senaryo:regex}$/)\n  |> group()\n  |> aggregateWindow(every: v.windowPeriod, fn: (tables=<-, column) => tables |> quantile(q: 0.99, column: column), createEmpty: false)\n  |> yield(name: \"p99_s2\")",
+          "refId": "D"
+        }
+      ]
+    },
+
+    {
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 2, "fillOpacity": 10 }
+        },
+        "overrides": [
+          { "matcher": { "id": "byFrameRefID", "options": "A" }, "properties": [{ "id": "displayName", "value": "bs-testha-1 VU" }, { "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }] },
+          { "matcher": { "id": "byFrameRefID", "options": "B" }, "properties": [{ "id": "displayName", "value": "bs-testha-2 VU" }, { "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }] }
+        ]
+      },
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 28 },
+      "id": 30,
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["max", "mean"] }
+      },
+      "title": "👥 Aktif VU Karşılaştırması (Ramp-up)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+          "query": "from(bucket: \"k6\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"vus\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"server\"] == \"bs-testha-1\")\n  |> filter(fn: (r) => r[\"testName\"] =~ /^${Senaryo:regex}$/)\n  |> group()\n  |> aggregateWindow(every: v.windowPeriod, fn: max, createEmpty: false)\n  |> yield(name: \"vu1\")",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+          "query": "from(bucket: \"k6\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"vus\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"server\"] == \"bs-testha-2\")\n  |> filter(fn: (r) => r[\"testName\"] =~ /^${Senaryo:regex}$/)\n  |> group()\n  |> aggregateWindow(every: v.windowPeriod, fn: max, createEmpty: false)\n  |> yield(name: \"vu2\")",
+          "refId": "B"
+        }
+      ]
+    },
+
+    {
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 2, "fillOpacity": 15 }
+        },
+        "overrides": [
+          { "matcher": { "id": "byFrameRefID", "options": "A" }, "properties": [{ "id": "displayName", "value": "bs-testha-1 Hata %" }, { "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }] },
+          { "matcher": { "id": "byFrameRefID", "options": "B" }, "properties": [{ "id": "displayName", "value": "bs-testha-2 Hata %" }, { "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }] }
+        ]
+      },
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 28 },
+      "id": 31,
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }
+      },
+      "title": "🔴 Hata Oranı Karşılaştırması",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+          "query": "from(bucket: \"k6\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"vu_errors\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"server\"] == \"bs-testha-1\")\n  |> filter(fn: (r) => r[\"testName\"] =~ /^${Senaryo:regex}$/)\n  |> group()\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"err1\")",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+          "query": "from(bucket: \"k6\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"vu_errors\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"server\"] == \"bs-testha-2\")\n  |> filter(fn: (r) => r[\"testName\"] =~ /^${Senaryo:regex}$/)\n  |> group()\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"err2\")",
+          "refId": "B"
+        }
+      ]
+    },
+
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 37 },
+      "id": 102,
+      "title": "📋 Server Bazlı Detay Tablosu",
+      "type": "row"
+    },
+
+    {
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "fieldConfig": {
+        "defaults": { "custom": { "displayMode": "auto" } }
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 38 },
+      "id": 40,
+      "options": { "showHeader": true, "footer": { "show": false } },
+      "title": "📑 Server Karşılaştırma — Toplam Metrikler",
+      "type": "table",
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+          "query": "from(bucket: \"k6\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"http_req_duration\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"testName\"] =~ /^${Senaryo:regex}$/)\n  |> group(columns: [\"server\"])\n  |> mean()\n  |> rename(columns: {_value: \"Ort. Süre (ms)\"})\n  |> yield(name: \"avg_table\")",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+          "query": "from(bucket: \"k6\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"http_req_duration\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"testName\"] =~ /^${Senaryo:regex}$/)\n  |> group(columns: [\"server\"])\n  |> quantile(q: 0.95)\n  |> rename(columns: {_value: \"P95 Süre (ms)\"})\n  |> yield(name: \"p95_table\")",
+          "refId": "B"
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+          "query": "from(bucket: \"k6\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"http_reqs\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"testName\"] =~ /^${Senaryo:regex}$/)\n  |> group(columns: [\"server\"])\n  |> sum()\n  |> rename(columns: {_value: \"Toplam İstek\"})\n  |> yield(name: \"total_table\")",
+          "refId": "C"
+        }
+      ]
+    },
+
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 46 },
+      "id": 103,
+      "title": "🔴 Hata Logları (Server Bazlı)",
+      "type": "row"
+    },
+
+    {
+      "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 47 },
+      "id": 50,
+      "options": { "dedupStrategy": "none", "enableLogDetails": true, "prettifyLogMessage": true, "showLabels": true, "showTime": true, "sortOrder": "Descending" },
+      "title": "VU Hata Logları — bs-testha-1",
+      "type": "logs",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+        "expr": "{job=\"k6\"} |= \"request_failed\" |= \"bs-testha-1\" | json | line_format \"{{.msg}}\" | json | __error__=\"\"",
+        "queryType": "range",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 47 },
+      "id": 51,
+      "options": { "dedupStrategy": "none", "enableLogDetails": true, "prettifyLogMessage": true, "showLabels": true, "showTime": true, "sortOrder": "Descending" },
+      "title": "VU Hata Logları — bs-testha-2",
+      "type": "logs",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+        "expr": "{job=\"k6\"} |= \"request_failed\" |= \"bs-testha-2\" | json | line_format \"{{.msg}}\" | json | __error__=\"\"",
+        "queryType": "range",
+        "refId": "A"
+      }]
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 38,
+  "tags": ["k6", "multi-server", "comparison"],
+  "templating": {
+    "list": [
+      { "current": {}, "hide": 0, "includeAll": false, "name": "DS_INFLUXDB", "query": "influxdb", "type": "datasource" },
+      { "current": {}, "hide": 0, "includeAll": false, "name": "DS_LOKI", "query": "loki", "type": "datasource" },
+      {
+        "current": { "selected": false, "text": "All", "value": "$__all" },
+        "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "name": "Senaryo",
+        "query": "import \"influxdata/influxdb/schema\"\nschema.measurementTagValues(bucket: \"k6\", measurement: \"http_reqs\", tag: \"testName\")",
+        "refresh": 2,
+        "type": "query"
+      }
+    ]
+  },
+  "time": { "from": "now-15m", "to": "now" },
+  "timezone": "browser",
+  "title": "🆚 Multi-Server Yük Testi Karşılaştırma (bs-testha-1 vs bs-testha-2)",
+  "uid": "k6-multi-server-compare",
+  "version": 1
+}
